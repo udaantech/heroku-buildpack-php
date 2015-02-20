@@ -1,34 +1,23 @@
+    server {
+        #server_name demo.hostel.local;
 
-#user  nobody;
-worker_processes  auto;
+        root /app/public_html; #!!!You must change it to the right path
+        index index.php;
 
-error_log  stderr;
-#error_log  logs/error.log  notice;
-#error_log  logs/error.log  info;
+        # set expiration of assets to MAX for caching
+        location ~* \.(ico|css|js|gif|jpe?g|png)(\?[0-9]+)?$ {
+                sendfile off;
+                expires off;
+                log_not_found off;
+        }
 
-#pid        logs/nginx.pid;
+        location / {
+                # Check if a file or directory index file exists, else route it to index.php.
+                try_files $uri $uri/ /index.php;
+        }
 
-
-events {
-    worker_connections  1024;
-}
-
-
-http {
-    include       mime.types;
-    default_type  application/octet-stream;
-
-    #log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
-    #                  '$status $body_bytes_sent "$http_referer" '
-    #                  '"$http_user_agent" "$http_x_forwarded_for"';
-
-    #access_log  logs/access.log  main;
-
-    sendfile        on;
-    #tcp_nopush     on;
-
-    #keepalive_timeout  0;
-    keepalive_timeout  65;
-
-    #gzip  on;
-}
+        location ~* \.php$ {
+                fastcgi_pass unix:/var/run/php5-fpm.sock;
+                include fastcgi_params;
+        }
+    }
